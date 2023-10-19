@@ -29,8 +29,47 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
-        
 
+
+
+        const productCollection = client.db("carCollection").collection("car");
+        const brandCollection = client.db("carCollection").collection("brandCollection");
+
+
+
+        //Get all the products
+        app.get("/products", async (req, res) => {
+            const query = productCollection.find();
+            const result = await query.toArray();
+            res.send(result);
+        })
+
+        // Get all the brands
+        app.get("/brands", async (req, res) => {
+            const query = brandCollection.find();
+            const result = await query.toArray();
+            res.send(result);
+        })
+
+
+        // Get products by brand
+        app.get("/products/:brandName", async (req, res) => {
+            const brandName = req.params.brandName;
+            const query = { brandName: brandName };
+            const products = await productCollection.find(query).toArray();
+            res.send(products);
+        })
+
+
+        // Post new data into the database
+        app.post("/products", async (req, res) => {
+            const newProduct = req.body;
+            const result = await productCollection.insertOne(newProduct);
+            res.send(result)
+        })
+
+
+        
 
 
 
