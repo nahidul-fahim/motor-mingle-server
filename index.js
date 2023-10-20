@@ -56,7 +56,6 @@ async function run() {
         // Get products by brand
         app.get("/products/:brandName", async (req, res) => {
             const brandName = req.params.brandName;
-            console.log("I am reaching brand")
             const query = { brandName: brandName };
             const products = await productCollection.find(query).toArray();
             res.send(products);
@@ -77,6 +76,15 @@ async function run() {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await productCollection.findOne(query);
+            res.send(result);
+        })
+
+
+        // Get product from cart collection
+        app.get("/productsOnCart/:id", async (req, res) => {
+            const currentUserEmail = req.params.id;
+            const query = { currentUserEmail: currentUserEmail};
+            const result = await productsOnCartCollection.find(query).toArray();
             res.send(result);
         })
 
@@ -111,6 +119,15 @@ async function run() {
             };
             const result = await productCollection.updateOne(filter, updateUser, options);
             res.send(result)
+        })
+
+
+        // Delete a user from cart collection
+        app.delete("/productsOnCart/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id)};
+            const result = await productsOnCartCollection.deleteOne(query);
+            res.send(result);
         })
 
 
