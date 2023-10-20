@@ -30,10 +30,10 @@ async function run() {
         await client.connect();
 
 
-
-
+        // Database and collection
         const productCollection = client.db("carCollection").collection("car");
         const brandCollection = client.db("carCollection").collection("brandCollection");
+        const productsOnCartCollection = client.db("carCollection").collection("productsOnCart");
 
 
 
@@ -63,7 +63,7 @@ async function run() {
         })
 
 
-        // Get products by ID
+        // Get product by ID
         app.get("/brandProducts/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
@@ -72,7 +72,7 @@ async function run() {
         })
 
 
-        // Get and update product by ID
+        // Get product by ID for update
         app.get("/updateProducts/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
@@ -89,6 +89,29 @@ async function run() {
         })
 
 
+        // Post new data into the Cart Collection database
+        app.post("/productsOnCart", async (req, res) => {
+            const newProduct = req.body;
+            const result = await productsOnCartCollection.insertOne(newProduct);
+            res.send(result);
+        })
+
+
+        // update a product
+        app.put("/updateProducts/:id", async(req, res) => {
+            const id = req.params.id;
+            const updateUserInfo = req.body;
+            console.log("info from the put", id, updateUserInfo);
+            const filter = { _id: new ObjectId(id)};
+            const options = { upsert: true };
+            const updateUser = {
+                $set: {
+                    productName: updateUserInfo.productName,
+                },
+            };
+            const result = await productCollection.updateOne(filter, updateUser, options);
+            res.send(result)
+        })
 
 
 
