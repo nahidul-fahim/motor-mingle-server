@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const cors = require('cors');
 const app = express();
@@ -44,6 +44,7 @@ async function run() {
             res.send(result);
         })
 
+
         // Get all the brands
         app.get("/brands", async (req, res) => {
             const query = brandCollection.find();
@@ -55,9 +56,28 @@ async function run() {
         // Get products by brand
         app.get("/products/:brandName", async (req, res) => {
             const brandName = req.params.brandName;
+            console.log("I am reaching brand")
             const query = { brandName: brandName };
             const products = await productCollection.find(query).toArray();
             res.send(products);
+        })
+
+
+        // Get products by ID
+        app.get("/brandProducts/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await productCollection.findOne(query);
+            res.send(result);
+        })
+
+
+        // Get and update product by ID
+        app.get("/updateProducts/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await productCollection.findOne(query);
+            res.send(result);
         })
 
 
@@ -69,7 +89,7 @@ async function run() {
         })
 
 
-        
+
 
 
 
