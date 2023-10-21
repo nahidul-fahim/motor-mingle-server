@@ -1,8 +1,8 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-require('dotenv').config();
-const cors = require('cors');
 const app = express();
+const cors = require('cors');
+require('dotenv').config();
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 
@@ -27,7 +27,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
 
         // Database and collection
@@ -115,6 +115,11 @@ async function run() {
             const updateUser = {
                 $set: {
                     productName: updateUserInfo.productName,
+                    brandName: updateUserInfo.brandName,
+                    carType: updateUserInfo.carType,
+                    productPrice: updateUserInfo.productPrice,
+                    rating: updateUserInfo.rating,
+                    photo: updateUserInfo.photo,
                 },
             };
             const result = await productCollection.updateOne(filter, updateUser, options);
