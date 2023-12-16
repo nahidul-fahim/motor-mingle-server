@@ -48,6 +48,24 @@ async function run() {
 
 
 
+        // verify token middleware
+        const verifyToken = (req, res, next) => {
+            const tokenAuthorization = req.headers.authorization;
+            if (!tokenAuthorization) {
+                return res.status(401).send({ message: 'Unauthorized' })
+            }
+            const token = tokenAuthorization.split(' ')[1]
+            // verify token
+            jwt.verify(token, process.env.ACCESS_WEB_TOKEN, (err, decoded) => {
+                if (err) {
+                    return res.status(401).send({ message: 'Unauthorized' })
+                }
+                req.decoded = decoded;
+                next();
+            })
+        }
+
+
 
 
         // Post new data into the database
@@ -111,7 +129,7 @@ async function run() {
 
 
         // Get product from cart collection
-        app.get("/productsOnCart/:id", async (req, res) => {
+        app.get("/productsOnCart/:id", verifyToken, async (req, res) => {
             const currentUserEmail = req.params.id;
             const query = { currentUserEmail: currentUserEmail };
             const result = await cartProductsCollection.find(query).toArray();
@@ -124,7 +142,6 @@ async function run() {
         app.put("/updateProducts/:id", async (req, res) => {
             const id = req.params.id;
             const updateUserInfo = req.body;
-            console.log("info from the put", id, updateUserInfo);
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
             const updateUser = {
