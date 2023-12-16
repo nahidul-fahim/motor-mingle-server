@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken')
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
@@ -33,8 +34,36 @@ async function run() {
         // Database and collection
         const productCollection = client.db("carCollection").collection("car");
         const brandCollection = client.db("carCollection").collection("brandCollection");
-        const productsOnCartCollection = client.db("carCollection").collection("productsOnCart");
         const cartProductsCollection = client.db("carCollection").collection("cartProducts");
+        // const productsOnCartCollection = client.db("carCollection").collection("productsOnCart"); // this is an old cart Colllection which is not being used anymore.
+
+
+
+        // JSON realted api
+        app.post("/jwt", async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_WEB_TOKEN, { expiresIn: '1h' });
+            res.send({ token });
+        })
+
+
+
+
+
+        // Post new data into the database
+        app.post("/products", async (req, res) => {
+            const newProduct = req.body;
+            const result = await productCollection.insertOne(newProduct);
+            res.send(result)
+        })
+
+
+        // Post new data into the Cart Collection database
+        app.post("/productsOnCart", async (req, res) => {
+            const newProduct = req.body;
+            const result = await cartProductsCollection.insertOne(newProduct);
+            res.send(result);
+        })
 
 
 
@@ -84,34 +113,19 @@ async function run() {
         // Get product from cart collection
         app.get("/productsOnCart/:id", async (req, res) => {
             const currentUserEmail = req.params.id;
-            const query = { currentUserEmail: currentUserEmail};
-            const result = await productsOnCartCollection.find(query).toArray();
+            const query = { currentUserEmail: currentUserEmail };
+            const result = await cartProductsCollection.find(query).toArray();
             res.send(result);
         })
 
-
-        // Post new data into the database
-        app.post("/products", async (req, res) => {
-            const newProduct = req.body;
-            const result = await productCollection.insertOne(newProduct);
-            res.send(result)
-        })
-
-
-        // Post new data into the Cart Collection database
-        app.post("/productsOnCart", async (req, res) => {
-            const newProduct = req.body;
-            const result = await cartProductsCollection.insertOne(newProduct);
-            res.send(result);
-        })
 
 
         // update a product
-        app.put("/updateProducts/:id", async(req, res) => {
+        app.put("/updateProducts/:id", async (req, res) => {
             const id = req.params.id;
             const updateUserInfo = req.body;
             console.log("info from the put", id, updateUserInfo);
-            const filter = { _id: new ObjectId(id)};
+            const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
             const updateUser = {
                 $set: {
@@ -131,8 +145,8 @@ async function run() {
         // Delete a user from cart collection
         app.delete("/productsOnCart/:id", async (req, res) => {
             const id = req.params.id;
-            const query = { _id: new ObjectId(id)};
-            const result = await productsOnCartCollection.deleteOne(query);
+            const query = { _id: new ObjectId(id) };
+            const result = await cartProductsCollection.deleteOne(query);
             res.send(result);
         })
 
