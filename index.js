@@ -34,6 +34,7 @@ async function run() {
         const productCollection = client.db("carCollection").collection("car");
         const brandCollection = client.db("carCollection").collection("brandCollection");
         const productsOnCartCollection = client.db("carCollection").collection("productsOnCart");
+        const cartProductsCollection = client.db("carCollection").collection("cartProducts");
 
 
 
@@ -100,7 +101,7 @@ async function run() {
         // Post new data into the Cart Collection database
         app.post("/productsOnCart", async (req, res) => {
             const newProduct = req.body;
-            const result = await productsOnCartCollection.insertOne(newProduct);
+            const result = await cartProductsCollection.insertOne(newProduct);
             res.send(result);
         })
 
