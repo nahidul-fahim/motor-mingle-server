@@ -99,6 +99,16 @@ async function run() {
 
 
 
+        // get the current user
+        app.get("/currentuser", async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await userListCollection.findOne(query);
+            res.send(result);
+        })
+
+
+
         //Get all the products
         app.get("/products", async (req, res) => {
             const query = productCollection.find();
