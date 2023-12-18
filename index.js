@@ -35,7 +35,7 @@ async function run() {
         const productCollection = client.db("carCollection").collection("car");
         const brandCollection = client.db("carCollection").collection("brandCollection");
         const cartProductsCollection = client.db("carCollection").collection("cartProducts");
-        // const productsOnCartCollection = client.db("carCollection").collection("productsOnCart"); // this is an old cart Colllection which is not being used anymore.
+        const userListCollection = client.db("carCollection").collection("usersList");
 
 
 
@@ -67,8 +67,22 @@ async function run() {
 
 
 
+        // post new created user data to databse
+        app.post("/newuser", async (req, res) => {
+            const newUserInfo = req.body;
+            const query = { email: newUserInfo?.email }
+            const existingUser = await userListCollection.findOne(query);
+            if (existingUser) {
+                return res.send({ message: "User already exists", insertedId: null })
+            }
+            else {
+                const result = await userListCollection.insertOne(newUserInfo);
+                res.send(result);
+            }
+        })
 
-        // Post new data into the database
+
+        // Post new product data into the database
         app.post("/products", async (req, res) => {
             const newProduct = req.body;
             const result = await productCollection.insertOne(newProduct);
@@ -104,6 +118,7 @@ async function run() {
         // Get products by brand
         app.get("/products/:brandName", async (req, res) => {
             const brandName = req.params.brandName;
+            console.log(brandName);
             const query = { brandName: brandName };
             const products = await productCollection.find(query).toArray();
             res.send(products);
