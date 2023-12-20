@@ -128,7 +128,6 @@ async function run() {
         // Get products by brand
         app.get("/products/:brandName", async (req, res) => {
             const brandName = req.params.brandName;
-            console.log(brandName);
             const query = { brandName: brandName };
             const products = await productCollection.find(query).toArray();
             res.send(products);
@@ -144,9 +143,9 @@ async function run() {
         })
 
 
-        // Get product by ID for update
-        app.get("/updateProducts/:id", async (req, res) => {
-            const id = req.params.id;
+        // Get a single product
+        app.get("/singleproduct", async (req, res) => {
+            const id = req.query;
             const query = { _id: new ObjectId(id) };
             const result = await productCollection.findOne(query);
             res.send(result);
@@ -164,22 +163,24 @@ async function run() {
 
 
         // update a product
-        app.put("/updateProducts/:id", async (req, res) => {
+        app.put("/updateProduct/:id", async (req, res) => {
             const id = req.params.id;
-            const updateUserInfo = req.body;
+            const updatedInfo = req.body;
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
-            const updateUser = {
+            const updatedProductInfo = {
                 $set: {
-                    productName: updateUserInfo.productName,
-                    brandName: updateUserInfo.brandName,
-                    carType: updateUserInfo.carType,
-                    productPrice: updateUserInfo.productPrice,
-                    rating: updateUserInfo.rating,
-                    photo: updateUserInfo.photo,
+                    productName: updatedInfo.productName,
+                    brandName: updatedInfo.brandName,
+                    carType: updatedInfo.carType,
+                    productPrice: updatedInfo.productPrice,
+                    rating: updatedInfo.rating,
+                    photo: updatedInfo.photo,
+                    updateDate: updatedInfo.updateDate,
+                    description: updatedInfo.description
                 },
             };
-            const result = await productCollection.updateOne(filter, updateUser, options);
+            const result = await productCollection.updateOne(filter, updatedProductInfo, options);
             res.send(result)
         })
 
