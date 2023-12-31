@@ -61,8 +61,25 @@ async function run() {
                     return res.status(401).send({ message: 'Unauthorized' })
                 }
                 req.decoded = decoded;
+                console.log(req.decoded, " ---getting from decoded")
                 next();
             })
+        }
+
+
+
+
+        // verify admin middleware
+        // TODO: REMOVE VERIFYADMIN FROM ALL PRODUCTS ROUTE (app.get)
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userListCollection.findOne(query);
+            const isAdmin = user?.userType === "admin";
+            if (!isAdmin) {
+                return res.status(403).send({ message: "Forbidden access!" })
+            };
+            next();
         }
 
 
@@ -83,7 +100,7 @@ async function run() {
 
 
         // Post new product data into the database
-        app.post("/products", async (req, res) => {
+        app.post("/products", verifyToken, verifyAdmin, async (req, res) => {
             const newProduct = req.body;
             const result = await productCollection.insertOne(newProduct);
             res.send(result)
@@ -91,10 +108,23 @@ async function run() {
 
 
         // Post new data into the Cart Collection database
-        app.post("/productsOnCart", async (req, res) => {
+        app.post("/productsOnCart", verifyToken, async (req, res) => {
             const newProduct = req.body;
             const result = await cartProductsCollection.insertOne(newProduct);
             res.send(result);
+        })
+
+
+
+        // verify admin middleware
+        app.get("/user/admin/:email", verifyToken, async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await userListCollection.findOne(query);
+            if (user.userType === "admin") {
+                admin = true;
+                res.send({ admin })
+            }
         })
 
 
@@ -106,7 +136,6 @@ async function run() {
             const result = await userListCollection.findOne(query);
             res.send(result);
         })
-
 
 
         //Get all the products
@@ -155,7 +184,7 @@ async function run() {
         // Get product from cart collection
         app.get("/productsOnCart/:id", verifyToken, async (req, res) => {
             const currentUserEmail = req.params.id;
-            const query = { currentUserEmail: currentUserEmail };
+            const query = { userEmail: currentUserEmail };
             const result = await cartProductsCollection.find(query).toArray();
             res.send(result);
         })
@@ -163,7 +192,7 @@ async function run() {
 
 
         // update a product
-        app.put("/updateProduct/:id", async (req, res) => {
+        app.put("/updateproduct/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const updatedInfo = req.body;
             const filter = { _id: new ObjectId(id) };
@@ -185,8 +214,20 @@ async function run() {
         })
 
 
+
+        // delete a product from all product collection
+        app.delete("/deleteproduct/:id", verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = productCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+
+
         // Delete a user from cart collection
-        app.delete("/productsOnCart/:id", async (req, res) => {
+        app.delete("/productsOnCart/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await cartProductsCollection.deleteOne(query);
