@@ -229,19 +229,16 @@ async function run() {
 
 
         // update seller verification status in the product list
-        app.put("/updateverificationinproductlist/:id", verifyToken, verifyAdmin, async (req, res) => {
+        app.put("/updatesellerverification/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
-            console.log("The id" + " " + id);
             const updatedVerificationStatus = req.body;
-            console.log("The update body" + " " + updatedVerificationStatus.updatedVerifyStatus);
             const filter = { sellerId: id };
-            console.log("From filer" + " " + filter)
             const updateStatus = {
                 $set: {
                     sellerVerificationStatus: updatedVerificationStatus.updatedVerifyStatus
                 }
             };
-            const result = userListCollection.updateMany(filter, updateStatus);
+            const result = await oldProductsCollectionByUser.updateMany(filter, updateStatus);
             res.send(result);
         })
 
