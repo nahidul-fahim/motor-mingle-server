@@ -62,7 +62,6 @@ async function run() {
                     return res.status(401).send({ message: 'Unauthorized' })
                 }
                 req.decoded = decoded;
-                console.log(req.decoded, " ---getting from decoded")
                 next();
             })
         }
@@ -138,6 +137,16 @@ async function run() {
 
 
 
+        // get all the users
+        app.get("/allusers", verifyToken, verifyAdmin, async (req, res) => {
+            const userType = "user";
+            const query = { userType: userType };
+            const result = await userListCollection.find(query).toArray();
+            res.send(result);
+        })
+
+
+
         // get the current user
         app.get("/currentuser", async (req, res) => {
             const email = req.query.email;
@@ -206,14 +215,36 @@ async function run() {
             const updatedVerificationRequest = req.body;
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
-            const updateRequest = {
-                $set: {
-                    verificationRequest: updatedVerificationRequest.requestUpdate
-                }
-            };
+            const updateRequest = { $set: {} };
+            if (updatedVerificationRequest.requestUpdate) {
+                updateRequest.$set.verificationRequest = updatedVerificationRequest.requestUpdate
+            }
+            if (updatedVerificationRequest.updatedVerifyStatus) {
+                updateRequest.$set.verifyStatus = updatedVerificationRequest.updatedVerifyStatus
+            }
             const result = await userListCollection.updateOne(filter, updateRequest, options);
             res.send(result);
         })
+
+
+
+        // update seller verification status in the product list
+        app.put("/updateverificationinproductlist/:id", verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            console.log("The id" + " " + id);
+            const updatedVerificationStatus = req.body;
+            console.log("The update body" + " " + updatedVerificationStatus.updatedVerifyStatus);
+            const filter = { sellerId: id };
+            console.log("From filer" + " " + filter)
+            const updateStatus = {
+                $set: {
+                    sellerVerificationStatus: updatedVerificationStatus.updatedVerifyStatus
+                }
+            };
+            const result = userListCollection.updateMany(filter, updateStatus);
+            res.send(result);
+        })
+
 
 
         // update a product
