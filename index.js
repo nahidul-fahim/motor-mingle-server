@@ -36,6 +36,7 @@ async function run() {
         const brandCollection = client.db("carCollection").collection("brandCollection");
         const cartProductsCollection = client.db("carCollection").collection("cartProducts");
         const userListCollection = client.db("carCollection").collection("usersList");
+        const oldProductsCollectionByUser = client.db("carCollection").collection("oldCarsByUsers");
 
 
 
@@ -70,7 +71,6 @@ async function run() {
 
 
         // verify admin middleware
-        // TODO: REMOVE VERIFYADMIN FROM ALL PRODUCTS ROUTE (app.get)
         const verifyAdmin = async (req, res, next) => {
             const email = req.decoded.email;
             const query = { email: email };
@@ -111,6 +111,15 @@ async function run() {
         app.post("/productsOnCart", verifyToken, async (req, res) => {
             const newProduct = req.body;
             const result = await cartProductsCollection.insertOne(newProduct);
+            res.send(result);
+        })
+
+
+
+        // post old product upload by user
+        app.post("/oldproduct", verifyToken, async (req, res) => {
+            const newProductByUser = req.body;
+            const result = await oldProductsCollectionByUser.insertOne(newProductByUser);
             res.send(result);
         })
 
