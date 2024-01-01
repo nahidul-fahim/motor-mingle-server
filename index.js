@@ -200,6 +200,22 @@ async function run() {
 
 
 
+        // update verification request for a user
+        app.put("/verificationrequest/:id", verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const updatedVerificationRequest = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateRequest = {
+                $set: {
+                    verificationRequest: updatedVerificationRequest.requestUpdate
+                }
+            };
+            const result = await userListCollection.updateOne(filter, updateRequest, options);
+            res.send(result);
+        })
+
+
         // update a product
         app.put("/updateproduct/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
