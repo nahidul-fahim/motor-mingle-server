@@ -210,19 +210,30 @@ async function run() {
 
 
         // update verification request for a user
-        app.put("/verificationrequest/:id", verifyToken, async (req, res) => {
+        app.put("/updateuserdetails/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
-            const updatedVerificationRequest = req.body;
+            const updatedDetails = req.body;
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
-            const updateRequest = { $set: {} };
-            if (updatedVerificationRequest.requestUpdate) {
-                updateRequest.$set.verificationRequest = updatedVerificationRequest.requestUpdate
+            const updateDoc = { $set: {} };
+
+            // update request status
+            if (updatedDetails.requestUpdate) {
+                updateDoc.$set.verificationRequest = updatedDetails.requestUpdate
             }
-            if (updatedVerificationRequest.updatedVerifyStatus) {
-                updateRequest.$set.verifyStatus = updatedVerificationRequest.updatedVerifyStatus
+            // update verification status
+            if (updatedDetails.updatedVerifyStatus) {
+                updateDoc.$set.verifyStatus = updatedDetails.updatedVerifyStatus
             }
-            const result = await userListCollection.updateOne(filter, updateRequest, options);
+            // update phone
+            if (updatedDetails.phone) {
+                updateDoc.$set.phone = updatedDetails.phone
+            }
+            // update address
+            if (updatedDetails.address) {
+                updateDoc.$set.address = updatedDetails.address
+            }
+            const result = await userListCollection.updateOne(filter, updateDoc, options);
             res.send(result);
         })
 
