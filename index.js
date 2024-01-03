@@ -35,6 +35,8 @@ async function run() {
         const productCollection = client.db("carCollection").collection("car");
         const brandCollection = client.db("carCollection").collection("brandCollection");
         const cartProductsCollection = client.db("carCollection").collection("cartProducts");
+
+        // this is the new database after revamp
         const userListCollection = client.db("carCollection").collection("usersList");
         const productListingsBySellers = client.db("carCollection").collection("oldCarsByUsers");
 
@@ -306,6 +308,16 @@ async function run() {
 
 
 
+        // Delete a product from collections of seller post
+        app.delete("/allcarslisting/:id", verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await productListingsBySellers.deleteOne(query);
+            res.send(result);
+        })
+
+
+
         // delete a product from all product collection
         app.delete("/deleteproduct/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
@@ -317,7 +329,7 @@ async function run() {
 
 
 
-        // Delete a user from cart collection
+        // Delete a product from cart collection
         app.delete("/productsOnCart/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
