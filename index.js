@@ -36,7 +36,7 @@ async function run() {
         const brandCollection = client.db("carCollection").collection("brandCollection");
         const cartProductsCollection = client.db("carCollection").collection("cartProducts");
         const userListCollection = client.db("carCollection").collection("usersList");
-        const oldProductsCollectionByUser = client.db("carCollection").collection("oldCarsByUsers");
+        const productListingsBySellers = client.db("carCollection").collection("oldCarsByUsers");
 
 
 
@@ -118,7 +118,7 @@ async function run() {
         // post old product upload by user
         app.post("/oldproduct", verifyToken, async (req, res) => {
             const newProductByUser = req.body;
-            const result = await oldProductsCollectionByUser.insertOne(newProductByUser);
+            const result = await productListingsBySellers.insertOne(newProductByUser);
             res.send(result);
         })
 
@@ -209,6 +209,33 @@ async function run() {
 
 
 
+        // get all the listings
+        app.get("/alllistings", async (req, res) => {
+            const result = await productListingsBySellers.find().toArray();
+            res.send(result);
+        })
+
+
+
+        // get specific seller listings
+        app.get("/listings/:email", verifyToken, async (req, res) => {
+            const email = req.params.email;
+            const query = { sellerEmail: email };
+            const result = await productListingsBySellers.find(query).toArray();
+            res.send(result);
+        })
+
+
+        // Get a single lisitng
+        app.get("/singlelisting/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await productListingsBySellers.findOne(query);
+            res.send(result);
+        })
+
+
+
         // update verification request for a user
         app.put("/updateuserdetails/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
@@ -249,7 +276,7 @@ async function run() {
                     sellerVerificationStatus: updatedVerificationStatus.updatedVerifyStatus
                 }
             };
-            const result = await oldProductsCollectionByUser.updateMany(filter, updateStatus);
+            const result = await productListingsBySellers.updateMany(filter, updateStatus);
             res.send(result);
         })
 
