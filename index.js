@@ -284,7 +284,40 @@ async function run() {
 
 
 
-        // update a product
+        // update a listing
+        app.put("/updatelisting/:id", verifyToken, async (req, res) => {
+            const id = req.params.id;
+            const updatedInfo = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    carName: updatedInfo.carName,
+                    carBrand: updatedInfo.carBrand,
+                    carType: updatedInfo.carType,
+                    price: updatedInfo.price,
+                    carCondition: updatedInfo.carCondition,
+                    purchasingDate: updatedInfo.purchasingDate,
+                    description: updatedInfo.description,
+                    photo: updatedInfo.photo,
+                    approvalStatus: updatedInfo.approvalStatus,
+                    addingDate: updatedInfo.addingDate,
+                    manufactureYear: updatedInfo.manufactureYear,
+                    engineCapacity: updatedInfo.engineCapacity,
+                    totalRun: updatedInfo.totalRun,
+                    fuelType: updatedInfo.fuelType,
+                    transmissionType: updatedInfo.transmissionType,
+                    registeredYear: updatedInfo.registeredYear,
+                    sellerPhone: updatedInfo.sellerPhone,
+                },
+            };
+            const result = await productListingsBySellers.updateOne(filter, updatedDoc, options);
+            res.send(result)
+        })
+
+
+
+        // update a product (delete later)
         app.put("/updateproduct/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const updatedInfo = req.body;
