@@ -39,6 +39,7 @@ async function run() {
         // this is the new database after revamp
         const userListCollection = client.db("carCollection").collection("usersList");
         const productListingsBySellers = client.db("carCollection").collection("oldCarsByUsers");
+        const savedAdsListCollection = client.db("carCollection").collection("savedAdsList");
 
 
 
@@ -125,6 +126,14 @@ async function run() {
         })
 
 
+        // post new saved ad to database
+        app.post("/newSavedAd", async (req, res) => {
+            const newSavedPostInfo = req.body;
+            const result = await savedAdsListCollection.insertOne(newSavedPostInfo);
+            res.send(result)
+        })
+
+
 
         // verify admin middleware
         app.get("/user/admin/:email", verifyToken, async (req, res) => {
@@ -135,6 +144,15 @@ async function run() {
                 admin = true;
                 res.send({ admin })
             }
+        })
+
+
+        // get single saved ad
+        app.get("/getSingleSavedAd/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { singleAdId: id };
+            const result = await savedAdsListCollection.findOne(query);
+            res.send(result);
         })
 
 
