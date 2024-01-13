@@ -150,7 +150,8 @@ async function run() {
         // get single saved ad
         app.get("/getSingleSavedAd/:id", async (req, res) => {
             const id = req.params.id;
-            const query = { singleAdId: id };
+            const email = req.query;
+            const query = { singleAdId: id, userEmail: email.email };
             const result = await savedAdsListCollection.findOne(query);
             res.send(result);
         })
@@ -355,6 +356,17 @@ async function run() {
             };
             const result = await productCollection.updateOne(filter, updatedProductInfo, options);
             res.send(result)
+        })
+
+
+
+        // delete a single saved ad
+        app.delete("/removedSavedAd/:id", async (req, res) => {
+            const id = req.params.id;
+            const email = req.query;
+            const query = { singleAdId: id, userEmail: email.email };
+            const result = await savedAdsListCollection.deleteOne(query);
+            res.send(result);
         })
 
 
