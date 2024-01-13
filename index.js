@@ -336,6 +336,23 @@ async function run() {
 
 
 
+        // update a sell status of a listing
+        app.put("/updateSellStatus/:id", async (req, res) => {
+            const id = req.params.id;
+            const updatedSellInfo = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    sellStatus: updatedSellInfo.sellStatus,
+                },
+            };
+            const result = await productListingsBySellers.updateOne(filter, updatedDoc, options);
+            res.send(result)
+        })
+
+
+
         // update a product (delete later)
         app.put("/updateproduct/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
