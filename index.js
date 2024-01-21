@@ -43,7 +43,7 @@ async function run() {
 
 
 
-        // JSON realted api
+        // JSON related api
         app.post("/jwt", async (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_WEB_TOKEN, { expiresIn: '1h' });
@@ -159,7 +159,7 @@ async function run() {
 
 
         // get all the users
-        app.get("/allusers", verifyToken, verifyAdmin, async (req, res) => {
+        app.get("/allUsers", verifyToken, verifyAdmin, async (req, res) => {
             const userType = "user";
             const query = { userType: userType };
             const result = await userListCollection.find(query).toArray();
@@ -177,7 +177,7 @@ async function run() {
         })
 
 
-        //Get all the products
+        //Get all the products (old data. Delete after complete revamp)
         app.get("/products", async (req, res) => {
             const query = productCollection.find();
             const result = await query.toArray();
@@ -185,7 +185,7 @@ async function run() {
         })
 
 
-        // Get all the brands
+        // Get all the brands (old data. Delete after complete revamp)
         app.get("/brands", async (req, res) => {
             const query = brandCollection.find();
             const result = await query.toArray();
@@ -193,7 +193,7 @@ async function run() {
         })
 
 
-        // Get products by brand
+        // Get products by brand (old data. Delete after complete revamp)
         app.get("/products/:brandName", async (req, res) => {
             const brandName = req.params.brandName;
             const query = { brandName: brandName };
@@ -212,7 +212,7 @@ async function run() {
 
 
         // Get a single product
-        app.get("/singleproduct", async (req, res) => {
+        app.get("/singleProduct", async (req, res) => {
             const id = req.query;
             const query = { _id: new ObjectId(id) };
             const result = await productCollection.findOne(query);
@@ -220,7 +220,7 @@ async function run() {
         })
 
 
-        // Get product from cart collection
+        // Get product from cart collection for particular user
         app.get("/productsOnCart/:id", verifyToken, async (req, res) => {
             const currentUserEmail = req.params.id;
             const query = { userEmail: currentUserEmail };
@@ -231,8 +231,27 @@ async function run() {
 
 
         // get all the listings
-        app.get("/alllistings", async (req, res) => {
+        app.get("/allListings", async (req, res) => {
             const result = await productListingsBySellers.find().toArray();
+            res.send(result);
+        })
+
+
+
+        // get listings for homepage with slice
+        app.get("/homeListings", async (req, res) => {
+            const result = await productListingsBySellers.find().sort({ _id: -1 }).toArray();
+            const slicedResult = result.slice(0, 6);
+            res.send(slicedResult);
+        });
+
+
+
+        // get saved items by the users
+        app.get("/savedAdsList/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { userEmail: email };
+            const result = await savedAdsListCollection.find(query).toArray();
             res.send(result);
         })
 
@@ -247,8 +266,8 @@ async function run() {
         })
 
 
-        // Get a single lisitng
-        app.get("/singlelisting/:id", async (req, res) => {
+        // Get a single listing
+        app.get("/singleListing/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await productListingsBySellers.findOne(query);
@@ -258,7 +277,7 @@ async function run() {
 
 
         // update verification request for a user
-        app.put("/updateuserdetails/:id", verifyToken, async (req, res) => {
+        app.put("/updateUserDetails/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
             const updatedDetails = req.body;
             const filter = { _id: new ObjectId(id) };
@@ -288,7 +307,7 @@ async function run() {
 
 
         // update seller verification status in the product list
-        app.put("/updatesellerverification/:id", verifyToken, verifyAdmin, async (req, res) => {
+        app.put("/updateSellerVerification/:id", verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const updatedVerificationStatus = req.body;
             const filter = { sellerId: id };
@@ -304,7 +323,7 @@ async function run() {
 
 
         // update a listing
-        app.put("/updatelisting/:id", verifyToken, async (req, res) => {
+        app.put("/updateListing/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
             const updatedInfo = req.body;
             const filter = { _id: new ObjectId(id) };
