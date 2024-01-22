@@ -239,13 +239,12 @@ async function run() {
 
         // get paginated listings
         app.get("/paginatedListings", async (req, res) => {
-            const totalListings = await productListingsBySellers.find().toArray();
+            const totalListings = await productListingsBySellers.find().sort({ _id: -1 }).toArray();
             const listingPerPage = parseInt(req.query.listingPerPage);
             const currentPage = parseInt(req.query.currentPage);
             const totalPages = Math.ceil(totalListings.length / listingPerPage)
             const startIndex = (currentPage - 1) * listingPerPage;
             const endIndex = (currentPage) * listingPerPage;
-            console.log(listingPerPage, currentPage);
             const paginatedListings = totalListings.slice(startIndex, endIndex);
             res.send({ totalPages, paginatedListings });
         })
