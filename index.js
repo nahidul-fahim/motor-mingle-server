@@ -35,6 +35,7 @@ async function run() {
         const userListCollection = client.db("carCollection").collection("usersList");
         const productListingsBySellers = client.db("carCollection").collection("oldCarsByUsers");
         const savedAdsListCollection = client.db("carCollection").collection("savedAdsList");
+        const feedbackListCollection = client.db("carCollection").collection("allFeedbacks");
 
 
 
@@ -113,6 +114,26 @@ async function run() {
         })
 
 
+
+        // post feedback by user
+        app.post("/userFeedback", async (req, res) => {
+            const newFeedback = req.body;
+            const result = await feedbackListCollection.insertOne(newFeedback);
+            res.send(result);
+        })
+
+
+
+        // get a single feedback
+        app.get("/singleFeedback/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { feedbackBy: id };
+            const result = await feedbackListCollection.findOne(query);
+            res.send(result);
+        })
+
+
+
         // verify admin middleware
         app.get("/user/admin/:email", verifyToken, async (req, res) => {
             const email = req.params.email;
@@ -155,7 +176,6 @@ async function run() {
         })
 
 
-
         // get all the listings
         app.get("/allListings", async (req, res) => {
             const result = await productListingsBySellers.find().toArray();
@@ -164,7 +184,7 @@ async function run() {
 
 
         // get paginated listings
-        app.get("/paginatedListings", async (req, res) => {
+        app.get("/filteredListings", async (req, res) => {
             const totalListings = await productListingsBySellers.find().sort({ _id: -1 }).toArray();
             const listingPerPage = parseInt(req.query.listingPerPage);
             const currentPage = parseInt(req.query.currentPage);
