@@ -31,11 +31,6 @@ async function run() {
         // await client.connect();
 
 
-        // Database and collection
-        const productCollection = client.db("carCollection").collection("car");
-        const brandCollection = client.db("carCollection").collection("brandCollection");
-        const cartProductsCollection = client.db("carCollection").collection("cartProducts");
-
         // this is the new database after revamp
         const userListCollection = client.db("carCollection").collection("usersList");
         const productListingsBySellers = client.db("carCollection").collection("oldCarsByUsers");
@@ -86,8 +81,8 @@ async function run() {
 
 
 
-        // post new created user data to databse
-        app.post("/newuser", async (req, res) => {
+        // post new created user data to database
+        app.post("/newUserApi", async (req, res) => {
             const newUserInfo = req.body;
             const query = { email: newUserInfo?.email }
             const existingUser = await userListCollection.findOne(query);
@@ -101,25 +96,9 @@ async function run() {
         })
 
 
-        // Post new product data into the database
-        app.post("/products", verifyToken, verifyAdmin, async (req, res) => {
-            const newProduct = req.body;
-            const result = await productCollection.insertOne(newProduct);
-            res.send(result)
-        })
-
-
-        // Post new data into the Cart Collection database
-        app.post("/productsOnCart", verifyToken, async (req, res) => {
-            const newProduct = req.body;
-            const result = await cartProductsCollection.insertOne(newProduct);
-            res.send(result);
-        })
-
-
 
         // post old product upload by user
-        app.post("/oldproduct", verifyToken, async (req, res) => {
+        app.post("/newCarSellByUser", verifyToken, async (req, res) => {
             const newProductByUser = req.body;
             const result = await productListingsBySellers.insertOne(newProductByUser);
             res.send(result);
@@ -132,7 +111,6 @@ async function run() {
             const result = await savedAdsListCollection.insertOne(newSavedPostInfo);
             res.send(result)
         })
-
 
 
         // verify admin middleware
@@ -169,62 +147,10 @@ async function run() {
 
 
         // get the current user
-        app.get("/currentuser", async (req, res) => {
+        app.get("/currentUser", async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const result = await userListCollection.findOne(query);
-            res.send(result);
-        })
-
-
-        //Get all the products (old data. Delete after complete revamp)
-        app.get("/products", async (req, res) => {
-            const query = productCollection.find();
-            const result = await query.toArray();
-            res.send(result);
-        })
-
-
-        // Get all the brands (old data. Delete after complete revamp)
-        app.get("/brands", async (req, res) => {
-            const query = brandCollection.find();
-            const result = await query.toArray();
-            res.send(result);
-        })
-
-
-        // Get products by brand (old data. Delete after complete revamp)
-        app.get("/products/:brandName", async (req, res) => {
-            const brandName = req.params.brandName;
-            const query = { brandName: brandName };
-            const products = await productCollection.find(query).toArray();
-            res.send(products);
-        })
-
-
-        // Get product by ID
-        app.get("/brandProducts/:id", async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await productCollection.findOne(query);
-            res.send(result);
-        })
-
-
-        // Get a single product
-        app.get("/singleProduct", async (req, res) => {
-            const id = req.query;
-            const query = { _id: new ObjectId(id) };
-            const result = await productCollection.findOne(query);
-            res.send(result);
-        })
-
-
-        // Get product from cart collection for particular user
-        app.get("/productsOnCart/:id", verifyToken, async (req, res) => {
-            const currentUserEmail = req.params.id;
-            const query = { userEmail: currentUserEmail };
-            const result = await cartProductsCollection.find(query).toArray();
             res.send(result);
         })
 
@@ -251,7 +177,7 @@ async function run() {
 
 
 
-        // get listings for homepage with slice
+        // get sliced listings for homepage
         app.get("/homeListings", async (req, res) => {
             const result = await productListingsBySellers.find().sort({ _id: -1 }).toArray();
             const slicedResult = result.slice(0, 6);
@@ -385,30 +311,6 @@ async function run() {
 
 
 
-        // update a product (delete later)
-        app.put("/updateproduct/:id", verifyToken, verifyAdmin, async (req, res) => {
-            const id = req.params.id;
-            const updatedInfo = req.body;
-            const filter = { _id: new ObjectId(id) };
-            const options = { upsert: true };
-            const updatedProductInfo = {
-                $set: {
-                    productName: updatedInfo.productName,
-                    brandName: updatedInfo.brandName,
-                    carType: updatedInfo.carType,
-                    productPrice: updatedInfo.productPrice,
-                    rating: updatedInfo.rating,
-                    photo: updatedInfo.photo,
-                    updateDate: updatedInfo.updateDate,
-                    description: updatedInfo.description
-                },
-            };
-            const result = await productCollection.updateOne(filter, updatedProductInfo, options);
-            res.send(result)
-        })
-
-
-
         // delete a single saved ad
         app.delete("/removedSavedAd/:id", async (req, res) => {
             const id = req.params.id;
@@ -421,7 +323,7 @@ async function run() {
 
 
         // Delete a product from collections of seller post
-        app.delete("/allcarslisting/:id", verifyToken, async (req, res) => {
+        app.delete("/allCarsListing/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await productListingsBySellers.deleteOne(query);
@@ -429,25 +331,6 @@ async function run() {
         })
 
 
-
-        // delete a product from all product collection
-        app.delete("/deleteproduct/:id", verifyToken, verifyAdmin, async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = productCollection.deleteOne(query);
-            res.send(result);
-        })
-
-
-
-
-        // Delete a product from cart collection
-        app.delete("/productsOnCart/:id", verifyToken, verifyAdmin, async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await cartProductsCollection.deleteOne(query);
-            res.send(result);
-        })
 
 
 
