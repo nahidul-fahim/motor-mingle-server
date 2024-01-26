@@ -134,6 +134,14 @@ async function run() {
 
 
 
+        // get all the feedback
+        app.get("/allFeedbacks", async (req, res) => {
+            const result = (await feedbackListCollection.find().sort({ _id: -1 }).toArray()).slice(0, 5);
+            res.send(result);
+        })
+
+
+
         // verify admin middleware
         app.get("/user/admin/:email", verifyToken, async (req, res) => {
             const email = req.params.email;
