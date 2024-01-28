@@ -8,7 +8,9 @@ const port = process.env.PORT || 5000;
 
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ["http://localhost:5173", "https://motor-mingle.web.app"]
+}));
 app.use(express.json());
 
 
@@ -208,7 +210,7 @@ async function run() {
         // get sliced listings for homepage
         app.get("/homeListings", async (req, res) => {
             const result = await productListingsBySellers.find().sort({ _id: -1 }).toArray();
-            const slicedResult = result.slice(0, 6);
+            const slicedResult = result.slice(0, 8);
             res.send(slicedResult);
         });
 
