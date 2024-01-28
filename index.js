@@ -193,16 +193,46 @@ async function run() {
         })
 
 
-        // get paginated listings
+
+        // get filtered and paginated result
         app.get("/filteredListings", async (req, res) => {
-            const totalListings = await productListingsBySellers.find().sort({ _id: -1 }).toArray();
+            console.log(req.query);
+
+            // get the query result coming from front end
             const listingPerPage = parseInt(req.query.listingPerPage);
             const currentPage = parseInt(req.query.currentPage);
-            const totalPages = Math.ceil(totalListings.length / listingPerPage)
+            const carCondition = req.query.carCondition;
+            const carBrand = req.query.carBrand;
+            const carPrice = req.query.carPrice;
+            const maxPrice = parseInt(carPrice.split("-")[1])
+            const minPrice = parseInt(carPrice.split("-")[0])
+
+            // validate result using query result
+            const query = {};
+            if (carCondition !== 'all') {
+                query.carCondition = { $regex: carCondition, $options: 'i' };
+            }
+            if (carBrand !== 'all') {
+                query.carBrand = { $regex: carBrand, $options: 'i' };
+            }
+            if (carPrice !== 'all' && minPrice === 8000) {
+                query.price = { $gte: minPrice };
+            }
+            if (carPrice !== 'all' && minPrice !== 8000) {
+                query.price = { $lte: maxPrice, $gte: minPrice };
+            }
+
+            // get the queried result
+            const filteredResult = await productListingsBySellers.find(query).sort({ _id: -1 }).toArray();
+
+            // pagination for the queried result
+            const totalPages = Math.ceil(filteredResult.length / listingPerPage)
             const startIndex = (currentPage - 1) * listingPerPage;
             const endIndex = (currentPage) * listingPerPage;
-            const paginatedListings = totalListings.slice(startIndex, endIndex);
-            res.send({ totalPages, paginatedListings });
+            const filteredListings = filteredResult.slice(startIndex, endIndex);
+
+            // send the result to frontend
+            res.send({ totalPages, filteredListings });
         })
 
 
