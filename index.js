@@ -38,6 +38,7 @@ async function run() {
         const productListingsBySellers = client.db("carCollection").collection("oldCarsByUsers");
         const savedAdsListCollection = client.db("carCollection").collection("savedAdsList");
         const feedbackListCollection = client.db("carCollection").collection("allFeedbacks");
+        const allBidsCollection = client.db("carCollection").collection("allBids");
 
 
 
@@ -119,6 +120,29 @@ async function run() {
         app.post("/userFeedback", async (req, res) => {
             const newFeedback = req.body;
             const result = await feedbackListCollection.insertOne(newFeedback);
+            res.send(result);
+        })
+
+
+        // post new bid details
+        app.post("/newBid", verifyToken, async (req, res) => {
+            const bidDetails = req.body;
+            const productId = bidDetails.productId;
+            const filter = { _id: new ObjectId(productId) };
+            const currentProduct = await productListingsBySellers.findOne(filter);
+            const currentBidAmount = currentProduct?.totalBids || 0;
+            const totalBids = currentBidAmount + 1;
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    totalBids: totalBids,
+                }
+            }
+            const updateTotalBid = await productListingsBySellers.updateOne(filter, updateDoc, options);
+            if (updateTotalBid.modifiedCount = 0) {
+                return res.send(false);
+            }
+            const result = await allBidsCollection.insertOne(bidDetails)
             res.send(result);
         })
 
@@ -241,6 +265,15 @@ async function run() {
         // get sliced listings for homepage
         app.get("/homeListings", async (req, res) => {
             const result = await productListingsBySellers.find().sort({ _id: -1 }).toArray();
+            const slicedResult = result.slice(0, 8);
+            res.send(slicedResult);
+        });
+
+
+
+        // get top bid listings for homepage
+        app.get("/topBidHomeListings", async (req, res) => {
+            const result = await productListingsBySellers.find().sort({ totalBids: -1 }).toArray();
             const slicedResult = result.slice(0, 8);
             res.send(slicedResult);
         });
