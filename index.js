@@ -68,8 +68,6 @@ async function run() {
         }
 
 
-
-
         // verify admin middleware
         const verifyAdmin = async (req, res, next) => {
             const email = req.decoded.email;
@@ -151,7 +149,10 @@ async function run() {
             const user = await userListCollection.findOne(query);
             if (user.userType === "admin") {
                 admin = true;
-                res.send({ admin })
+                res.send({ admin: true })
+            }
+            else {
+                res.send({ admin: false })
             }
         })
 
