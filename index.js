@@ -262,6 +262,16 @@ async function run() {
 
 
 
+        // get bids for a single product
+        app.get("/allBidsForProduct/:id", async (req, res) => {
+            const productId = req.params.id;
+            const query = { productId: productId };
+            const result = await allBidsCollection.find(query).toArray();
+            res.send(result);
+        })
+
+
+
         // get sliced listings for homepage
         app.get("/homeListings", async (req, res) => {
             const result = await productListingsBySellers.find().sort({ _id: -1 }).toArray();
