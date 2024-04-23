@@ -414,7 +414,6 @@ async function run() {
         })
 
 
-
         // delete a single saved ad
         app.delete("/removedSavedAd/:id", async (req, res) => {
             const id = req.params.id;
@@ -427,7 +426,7 @@ async function run() {
 
 
         // Delete a product from collections of seller post
-        app.delete("/allCarsListing/:id", verifyToken, async (req, res) => {
+        app.delete("/api/deleteSingleListing/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await productListingsBySellers.deleteOne(query);
